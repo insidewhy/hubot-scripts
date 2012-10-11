@@ -32,12 +32,8 @@ respondTo = (msg) -> (arg) -> msg.send arg
 module.exports = (robot) ->
   robot.respond /song/i, (msg) ->
     getSong respondTo(msg)
-  robot.hear /^!(?:this|c) *$/i, (msg) ->
-    getSong respondTo(msg)
 
   robot.respond /skip/i, (msg) ->
-    skipTrack respondTo(msg)
-  robot.hear /^!(?:next|no) *$/i, (msg) ->
     skipTrack respondTo(msg)
 
 # vim:ts=2 sw=2
