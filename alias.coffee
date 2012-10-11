@@ -9,14 +9,24 @@ module.exports = (robot) ->
   # global for stopping alias infinite alias recursion
   recursionCount = 0
   aliases = null
+  aliasCmds = {}
 
   makeAlias = (from, to) ->
+    replaced = false
     aliases[from] = to
     robot.brain.save()
+
+    existing = aliasCmds[from]
+    if existing
+      for listener, idx in robot.listeners
+        if listener is existing
+          robot.listeners.splice idx, 1
+          break
+
     robot.commands.push "#{from} - alias for `#{to}'"
 
     re = new RegExp("^" + from + "( .+)?$")
-    robot.hear re, (response) ->
+    listenerIdx = robot.hear re, (response) ->
       if ++recursionCount is 100
         response.send 'hit recursion depth of 100'
         return
@@ -26,6 +36,9 @@ module.exports = (robot) ->
       robot.receive msg
 
       --recursionCount
+
+    aliasCmds[from] = robot.listeners[listenerIdx - 1]
+    return
 
   robot.respond /alias +(\S+)\s+(.*)\s*$/, (response) ->
     match = response.match
