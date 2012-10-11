@@ -2,7 +2,7 @@
 #   Allows user to create command aliases for Hubot
 #
 # Commands:
-#   hubot alias <alias> cmd - Alias cmd to alias
+#   hubot alias <alias> <cmd> - Alias cmd to alias
 hubot = require 'hubot'
 
 module.exports = (robot) ->

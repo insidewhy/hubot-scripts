@@ -6,8 +6,7 @@
 #
 # Commands:
 #   hubot song - Get current song.
-#   !this - Get current song.
-#   !c - Get current song.
+#   hubot skip - Skip current song.
 
 mpdsocket = require 'mpdsocket'
 mpd = new mpdsocket 'localhost', 6600
