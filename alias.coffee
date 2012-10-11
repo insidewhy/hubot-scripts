@@ -11,8 +11,6 @@ module.exports = (robot) ->
   aliases = null
 
   makeAlias = (from, to) ->
-    from = from.trim()
-    to = to.trim()
     aliases[from] = to
     robot.brain.save()
     robot.commands.push "#{from} - alias for `#{to}'"
@@ -29,7 +27,7 @@ module.exports = (robot) ->
 
       --recursionCount
 
-  robot.respond /alias (\S+)\s+(.*)/, (response) ->
+  robot.respond /alias +(\S+)\s+(.*)\s*$/, (response) ->
     match = response.match
     makeAlias match[1], match[2]
     response.send "made alias from `#{match[1]}' to `#{match[2]}'"
