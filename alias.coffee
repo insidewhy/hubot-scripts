@@ -11,8 +11,11 @@ module.exports = (robot) ->
   aliases = null
 
   makeAlias = (from, to) ->
+    from = from.trim()
+    to = to.trim()
     aliases[from] = to
     robot.brain.save()
+    robot.commands.push "#{from} - alias for `#{to}'"
 
     re = new RegExp("^" + from + "( .+)?$")
     robot.hear re, (response) ->
@@ -30,7 +33,6 @@ module.exports = (robot) ->
     match = response.match
     makeAlias match[1], match[2]
     response.send "made alias from `#{match[1]}' to `#{match[2]}'"
-
 
   # setup
   robot.brain.on 'loaded', ->
