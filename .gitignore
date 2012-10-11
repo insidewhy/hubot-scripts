@@ -1,6 +1,6 @@
 help.coffee
 httpd.coffee
-math.coffee
+maths.coffee
 ping.coffee
 roles.coffee
 storage.coffee
