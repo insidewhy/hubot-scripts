@@ -3,6 +3,7 @@
 #
 # Commands:
 #   hubot alias <alias> <cmd> - Alias cmd to alias
+#   hubot unalias <alias> - Remove an alias
 hubot = require 'hubot'
 
 module.exports = (robot) ->
@@ -15,14 +16,7 @@ module.exports = (robot) ->
     replaced = false
     aliases[from] = to
     robot.brain.save()
-
-    existing = aliasCmds[from]
-    if existing
-      for listener, idx in robot.listeners
-        if listener is existing
-          robot.listeners.splice idx, 1
-          break
-
+    removeAlias from
     robot.commands.push "#{from} - alias for `#{to}'"
 
     re = new RegExp("^" + from + "( .+)?$")
@@ -40,10 +34,33 @@ module.exports = (robot) ->
     aliasCmds[from] = robot.listeners[listenerIdx - 1]
     return
 
+  # remove alias, returning true if it was found.
+  removeAlias = (from) ->
+    existing = aliasCmds[from]
+    if existing
+      # TODO: push into after command processing else this will interfere
+      #       with it!
+      for listener, idx in robot.listeners
+        if listener is existing
+          robot.listeners.splice idx, 1
+          return true
+    return false
+
   robot.respond /alias +(\S+)\s+(.*)\s*$/, (response) ->
     match = response.match
     makeAlias match[1], match[2]
+    response.finish() # in case makeAlias spliced the listeners
     response.send "made alias from `#{match[1]}' to `#{match[2]}'"
+
+  robot.respond /unalias +(\S+)\s*$/, (response) ->
+    alias = response.match[1]
+    if removeAlias alias
+      response.finish()
+      delete aliases[alias]
+      robot.brain.save()
+      response.send "removed alias `#{alias}'"
+    else
+      response.send "alias `#{alias}' was not found"
 
   # setup
   robot.brain.on 'loaded', ->
