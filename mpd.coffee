@@ -14,7 +14,7 @@ mpd = new mpdsocket 'localhost', 6600
 getSong = (handler) ->
   mpd.send 'status', (r) ->
     mpd.send 'playlistinfo ' + r.song, (r) ->
-      response = r.Artist or "Unknown artist"
+      response = "Hark! #{r.Artist or "Unknown artist"}"
       response += " - #{r.Album}" if r.Album
       response += " - #{r.Track}" if r.Track
       response += " - #{r.Title}" if r.Title
