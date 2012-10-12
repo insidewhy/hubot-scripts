@@ -20,7 +20,7 @@ module.exports = (robot) ->
     robot.commands.push "#{from} - alias for `#{to}'"
 
     re = new RegExp("^" + from + "( .+)?$")
-    listenerIdx = robot.hear re, (response) ->
+    robot.hear re, (response) ->
       if ++recursionCount is 100
         response.send 'hit recursion depth of 100'
         return
@@ -31,7 +31,8 @@ module.exports = (robot) ->
 
       --recursionCount
 
-    aliasCmds[from] = robot.listeners[listenerIdx - 1]
+    # final listener is one just added
+    aliasCmds[from] = robot.listeners[robot.listeners.length - 1]
     return
 
   # remove alias, returning true if it was found.
