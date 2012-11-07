@@ -8,12 +8,28 @@
 #   hubot song - Get current song.
 #   hubot skip - Skip current song.
 
+host = 'localhost'
+port = 6600
+
 mpdsocket = require 'mpdsocket'
-mpd = new mpdsocket 'localhost', 6600
+mpd = new mpdsocket host, port
+
+send = (cmd, handler, attempt = 0) ->
+  try
+    mpd.send cmd, handler
+  catch e
+    if attempt is 5
+      handler "Could not connect to mpd, tried 5 times"
+    else
+      # responding to the connect like this doesn't work, need to add
+      # another event to mpdsocket
+      mpd.on 'connect', () -> send(cmd, handler, attempt + 1)
+      mpd.open host, port
+  return
 
 getSong = (handler) ->
-  mpd.send 'status', (r) ->
-    mpd.send 'playlistinfo ' + r.song, (r) ->
+  send 'status', (r) ->
+    send 'playlistinfo ' + r.song, (r) ->
       response = "Hark! #{r.Artist or "Unknown artist"}"
       response += " - #{r.Album}" if r.Album
       response += " - #{r.Track}" if r.Track
@@ -23,7 +39,7 @@ getSong = (handler) ->
 skipTrack = (handler) ->
   getSong (r) ->
     handler "skipping: #{r}"
-    mpd.send 'next', (r) ->
+    send 'next', (r) ->
       getSong (r) -> handler "skipped to: #{r}"
 
 respondTo = (msg) -> (arg) -> msg.send arg
