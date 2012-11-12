@@ -9,11 +9,12 @@
 #   hubot skip - Skip current song.
 
 host = 'localhost'
-port = 6600
+port = process.env.HUBOT_MPD_PORT or 6600
 
 mpdsocket = require 'mpdsocket'
 mpd = new mpdsocket host, port
 
+# send, on failure then reattempt connection up do 5 times and retry.
 send = (cmd, handler, attempt = 0) ->
   try
     mpd.send cmd, handler
@@ -23,8 +24,8 @@ send = (cmd, handler, attempt = 0) ->
     else
       # responding to the connect like this doesn't work, need to add
       # another event to mpdsocket
-      mpd.on 'connect', () -> send(cmd, handler, attempt + 1)
       mpd.open host, port
+      mpd.on 'connect', -> send cmd, handler, attempt + 1
   return
 
 getSong = (handler) ->
@@ -42,6 +43,7 @@ skipTrack = (handler) ->
     send 'next', (r) ->
       getSong (r) -> handler "skipped to: #{r}"
 
+# return a function that responds to the message given as an argument
 respondTo = (msg) -> (arg) -> msg.send arg
 
 module.exports = (robot) ->

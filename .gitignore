@@ -5,3 +5,4 @@ ping.coffee
 roles.coffee
 storage.coffee
 translate.coffee
+web.coffee
