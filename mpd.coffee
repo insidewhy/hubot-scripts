@@ -25,12 +25,17 @@ send = (cmd, handler, attempt = 0) ->
       # responding to the connect like this doesn't work, need to add
       # another event to mpdsocket
       mpd.open host, port
-      mpd.on 'connect', -> send cmd, handler, attempt + 1
+      mpd.on 'connect', ->
+        console.log "mpd reconnected"
+        send cmd, handler, attempt + 1
   return
 
 getSong = (handler) ->
   send 'status', (r) ->
     send 'playlistinfo ' + r.song, (r) ->
+      # work around bug with mpdsocket dividing songs with duplicate tags
+      if r[1] then r = r[1]
+
       response = "Hark! #{r.Artist or "Unknown artist"}"
       response += " - #{r.Album}" if r.Album
       response += " - #{r.Track}" if r.Track
