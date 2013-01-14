@@ -13,6 +13,7 @@ hubot = require 'hubot'
 
 module.exports = (robot) ->
   questions = null
+  ignoring  = null # people not to send messages to
 
   robot.respond /question add +(.+)[\s\?]*$/, (r) ->
     q = r.match[1]
@@ -92,8 +93,31 @@ module.exports = (robot) ->
 
       q.answers[aId].votedBy.push userId
 
+  robot.respond /ignore (\w+) *$/, (r) ->
+    toIgnore = r.match[1]
+    if ignoring
+      already = ignoring[toIgnore]
+      if already
+        r.send "already ignoring #{toIgnore}"
+      else
+        ignoring[toIgnore] = 1
+        r.send "now ignoring #{toIgnore}"
+    return
+
+  robot.respond /unignore (\w+) *$/, (r) ->
+    toIgnore = r.match[1]
+    if ignoring
+      already = ignoring[toIgnore]
+      if already
+        delete ignoring[toIgnore]
+        r.send "no longer ignoring #{toIgnore}"
+      else
+        r.send "already not ignoring #{toIgnore}"
+    return
+
   robot.enter (r) ->
     userId = r.message.user.id
+    return if ignoring[userId]
 
     for q, qId in questions
       answered = do ->
@@ -109,5 +133,9 @@ module.exports = (robot) ->
     questions = robot.brain.data.questions
     if not questions
       questions = robot.brain.data.questions = []
+
+    ignoring = robot.brain.data.ignoring
+    if not ignoring
+      ignoring = robot.brain.data.ignoring = {}
 
 # vim:ts=2 sw=2
